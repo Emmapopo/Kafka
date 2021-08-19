@@ -17,22 +17,4 @@ The Kafka Engine has 3 topics.
 
 There are six major endpoints for this service. They include:
 
-1. Add Producer: For adding a producer.
 
-This is a POST Request
-The path is - http://127.0.0.1:5000/kafka/producer/add
-To register a new producer, you need supply:
-
-a) the user_id - The only acceptable ID format is the UUID
-
-NB: The request must be in form of JSON.
-
-Here is a sample request:
-{
-"user_id": "180ef2a7-3274-4c70-8e39-5f1cd053f8b3"
-}
-Based on this request, there are three possible responses:
-
-{"status": "Invalid uuid"}, 400 - for invalid uuid
-{"status": f"{self.user_id} added"} - if successful
-{"status": "user already added"} - if user is already registered
