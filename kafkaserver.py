@@ -6,21 +6,30 @@
 # ------------------------------------------------
 
 from flask import Flask, request
-import functions
-import variables
-from controller.producers import Producers
+import sys
 from log.logging_func import logger
-
-producers = variables.producers
 
 app = Flask(__name__)
 
-producer_controller = Producers(producers)
+
+@app.route("/")
+def main():
+    return '''
+     <form action="/echo" method="POST">
+         <input name="text">
+         <input type="submit" value="Echo">
+     </form>
+     '''
 
 
-@app.route('/kafka/producer/add', methods=['POST'])
-def add_producer():
-   pass
+@app.route("/echo", methods=['POST'])
+def echo():
+    if 'text' in request.form:
+        return "You said: " + request.form['text']
+    else:
+        return "Nothing to say?"
+
+
 if __name__ == '__main__':
     logger.info("Starting Server...")
-    app.run(debug=True)
+    app.run()
