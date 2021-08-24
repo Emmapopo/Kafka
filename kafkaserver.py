@@ -24,30 +24,30 @@ def add_producer():
 
     try:
         json_data = request.get_json()
-        user_id = json_data["user_id"]
-        logger.info(f'{user_id} tried to register as a producer')
+        producer_id = json_data["producer_id"]
+        logger.info(f'{producer_id} tried to register as a producer')
     except Exception as e:
         logger.error("InputFailed occured", exc_info=True)
         return{"status": e}
 
     try:
 
-        if not functions.is_valid_uuid(user_id):
+        if not functions.is_valid_uuid(producer_id):
             logger.error(
-                f'{user_id} tried to register as a producer with invalid UUID')
+                f'{producer_id} tried to register as a producer with invalid UUID')
             return {"status": "Invalid uuid"}, 400
 
-        status = producer_controller.add(user_id)
-        if status == "user already added":
+        status = producer_controller.add(producer_id)
+        if status == "producer already added":
             return {"status": status}, 409
 
         else:
-            logger.info(f'{user_id} registered as producer successfully')
+            logger.info(f'{producer_id} registered as producer successfully')
             return {"status": status}, 201
 
     except:
         logger.error("Exception occured", exc_info=True)
-        return{"status": f"{user_id} invalid field"}
+        return{"status": f"{producer_id} invalid field"}
 
 
 if __name__ == '__main__':
