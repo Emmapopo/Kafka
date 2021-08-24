@@ -10,12 +10,21 @@ import logging
 import json
 
 from basecase import BaseCase
+import variables
 
 # Disable logging details. You can highlight code to include logging details back.
 logging.disable(logging.CRITICAL)
 
 
 class TestAddProducer(BaseCase):
+
+    def setUp(self):
+        super(TestAddProducer, self).setUp()
+        self.producers = variables.producers
+
+    def tearDown(self):
+        self.producers.clear()
+    
 
     def test_valid_uuid(self):
         """Test for a valid UUID"""

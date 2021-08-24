@@ -16,14 +16,14 @@ grandparentdir = os.path.dirname(parentdir)
 sys.path.append(grandparentdir)
 
 from kafkaserver import app
-import variables
 
 
 class BaseCase(unittest.TestCase):
 
     def setUp(self):
         self.app = app.test_client()
-        self.producers = variables.producers
+        
 
     def tearDown(self):
-        self.producers.clear()
+        pass
+    
