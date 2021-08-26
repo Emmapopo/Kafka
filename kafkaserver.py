@@ -5,7 +5,16 @@
 # email emmanueloyedeji2086@gmail.com
 # ------------------------------------------------
 
-from flask import Flask, request
+import os
+from logging import log
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from flask_jwt_extended import (
+    JWTManager, jwt_required, create_access_token,
+    jwt_refresh_token_required, create_refresh_token,
+    get_jwt_identity, set_access_cookies,
+    set_refresh_cookies
+)
 
 import functions
 import variables
@@ -18,10 +27,76 @@ consumers = variables.consumers
 assigner = variables.assigner
 
 app = Flask(__name__)
+app.config['JWT_TOKEN_LOCATION'] = ['cookies']
+app.config['JWT_COOKIE_SECURE'] = False
+app.config['JWT_ACCESS_COOKIE_PATH'] = '/kafka/'
+app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
+app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+# The Jwt_secret_key is obtained from environment variables
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 
+jwt = JWTManager(app)
+CORS(app)
 
 producer_controller = Producers(producers)
 consumer_controller = Consumers(consumers, assigner)
+
+
+@app.route("/login/auth", methods=["POST"])
+def login():
+    """ Endpoint to login to the kafka server"""
+    try:
+        json_data = request.get_json()
+        user_id = json_data["user_id"]
+        logger.info(f'{user_id} tried to login')
+
+    except Exception as e:
+        logger.error("InputFailed occured", exc_info=True)
+        return{"status": e}
+
+    # This variable stores if the user is logged_in as a producer, consumer, or both.
+    logged_in_as = []
+
+    try:
+        if user_id not in producers:
+            if user_id not in consumers["topic1"] and user_id not in consumers["topic2"] and user_id not in consumers["topic3"]:
+                logger.error(f'{user_id} not registered')
+                return jsonify({"msg": "user not registered"}), 401
+
+        if user_id in producers:
+            logged_in_as.append("producer")
+
+        if user_id in consumers["topic1"] or user_id in consumers["topic2"] or user_id in consumers["topic3"]:
+            logged_in_as.append("consumer")
+
+        access_token = create_access_token(identity={'user_id': user_id})
+        refresh_token = create_refresh_token(identity={'user_id': user_id})
+
+        resp = jsonify({'login': True, 'user_id': user_id,
+                        "logged_in_as": logged_in_as})
+        set_access_cookies(resp, access_token)
+        set_refresh_cookies(resp, refresh_token)\
+
+        logger.info(f'{user_id} logged in as {logged_in_as}')
+        return resp, 200
+
+    except:
+        logger.error("Exception occured", exc_info=True)
+        return{"status": f"{user_id} failed to login"}
+
+
+@app.route('/token/refresh', methods=['POST'])
+@jwt_refresh_token_required
+def refresh():
+    # Create the new access token
+    current_user = get_jwt_identity()
+    access_token = create_access_token(identity=current_user)
+
+    # Set the access JWT and CSRF double submit protection cookies
+    # in this response
+    resp = jsonify({'refresh': True})
+    set_access_cookies(resp, access_token)
+    return resp, 200
 
 
 @app.route('/kafka/producer/add', methods=['POST'])
