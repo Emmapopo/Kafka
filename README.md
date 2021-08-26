@@ -63,3 +63,39 @@ Based on this request, there are three possible responses:
 {"status": f"{self.consumer_id} registered as consumer successfully"} - if successful
 {"status": "consumer already added"} - if consumer is already registered
 {"status": e} - where e represents any other error message
+
+3. Login: For producers and consumers
+
+This is a POST Request
+The path is - http://127.0.0.1:5000/login/auth
+To register a new producer, you need supply:
+
+a) user_id - this is the id of the producer or consumer
+
+The sample requestis of the JSON form:
+
+{
+"user_id": "f6400502-b088-4cca-b370-5b61d080a1d8"
+}
+
+Based on this request, here are the posible resposes:
+
+If login is successful:
+{
+    "logged_in_as": [
+        "producer"
+    ],
+    "login": true,
+    "user_id": "f6400502-b088-4cca-b370-5b61d080a1d8"
+}
+
+If login is unssuccessful:
+{
+    "msg": "user not registered"
+}
+
+or 
+
+{"status": e} - where e represents any other error message
+
+
